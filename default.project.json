@@ -5,7 +5,7 @@
 
     "ReplicatedStorage": {
       "BloxxyUI": {
-        "$path": "src",
+        "$path": "BloxxyUI",
         "Instances": {
           "$className": "Folder",
           "$ignoreUnknownInstances": true
