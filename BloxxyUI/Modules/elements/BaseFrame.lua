@@ -12,7 +12,7 @@ function Element.new(Properties, Callback, BaseFrame)
 
     self._maid = Maid.new()
     self._properties = Properties
-    self._callback = Callback
+    self._callback = Callback or function() end
     self._state = 1
     self._prop = nil
     self._base = BaseFrame

@@ -115,37 +115,40 @@ function Controller:AddElement(Name, Properties, Callback)
     function runComponents(Prop, parent)
         if typeof(Prop.Components) == "table" then
             local checked = {}
-            for i,v in next, Prop.Components do
+            for i,component in next, Prop.Components do
                 local done = false
-                if checked[i] == nil and v["Properties"] ~= nil and typeof(v["Properties"]["Components"]) == "table" and #v["Properties"]["Components"] > 0 then
+                local this = Prop.Components[i]
+                if checked[i] == nil and component["Properties"] ~= nil and typeof(component["Properties"]["Components"]) == "table" and #component["Properties"]["Components"] > 0 then
                     checked[i] = true
                     
-                    Prop.Components[i].Properties = Prop.Components[i].Properties or {}
-                    Prop.Components[i].Properties.Parent = parent or ELEMENT._prop
-                    Prop.Components[i].Callback = Prop.Components[i].Callback or nil
+                    this.Properties = this.Properties or {}
+                    this.Properties.Parent = parent or ELEMENT._prop
+                    this.Callback = this.Callback or nil
                     
-                    if Prop.Components[i].Properties["Name"] ~= nil then
-                        ELEMENT.Components[Prop.Components[i].Properties.Name] = self._elements[v.Name].Element.new(Prop.Components[i].Properties, Prop.Components[i].Callback, ELEMENT)
+                    if this.Properties["Name"] ~= nil then
+                        ELEMENT.Components[this.Properties.Name] = self._elements[component.Name].Element.new(this.Properties, this.Callback, ELEMENT)
+                        this = ELEMENT.Components[this.Properties.Name]
                     else
-                        Prop.Components[i] = self._elements[v.Name].Element.new(Prop.Components[i].Properties, Prop.Components[i].Callback, ELEMENT)
+                        this = self._elements[component.Name].Element.new(this.Properties, this.Callback, ELEMENT)
                     end
                     
                     task.spawn(function()
-                        runComponents(v.Properties, Prop.Components[i]._prop)
+                        runComponents(component.Properties, this._prop)
                     end)
 
                     done = true
                 end
 
-                if done == false and self._elements[v.Name] ~= nil then
-                    Prop.Components[i].Properties = Prop.Components[i].Properties or {}
-                    Prop.Components[i].Properties.Parent = parent or ELEMENT._prop
-                    Prop.Components[i].Callback = Prop.Components[i].Callback or function() end
+                if done == false and self._elements[component.Name] ~= nil then
+                    this.Properties = this.Properties or {}
+                    this.Properties.Parent = parent or ELEMENT._prop
+                    this.Callback = this.Callback or function() end
     
-                    if Prop.Components[i].Properties["Name"] ~= nil then
-                        ELEMENT.Components[Prop.Components[i].Properties.Name] = self._elements[v.Name].Element.new(Prop.Components[i].Properties, Prop.Components[i].Callback, ELEMENT)
+                    if this.Properties["Name"] ~= nil then
+                        ELEMENT.Components[this.Properties.Name] = self._elements[component.Name].Element.new(this.Properties, this.Callback, ELEMENT)
+                        this = ELEMENT.Components[this.Properties.Name]
                     else
-                        Prop.Components[i] = self._elements[v.Name].Element.new(Prop.Components[i].Properties, Prop.Components[i].Callback, ELEMENT)
+                        this = self._elements[component.Name].Element.new(this.Properties, this.Callback, ELEMENT)
                     end
                 end
             end

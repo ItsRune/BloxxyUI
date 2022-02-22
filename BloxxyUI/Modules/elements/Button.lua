@@ -83,6 +83,8 @@ function Element:UpdateProperties()
             self._properties.Color = color;
         elseif i == "Text" then
             self._prop.Label.Text = v
+        elseif i == "TextSize" then
+            self._prop.Label.TextSize = v
         elseif i == "Parent" then
             self._prop.Parent = v
         else
