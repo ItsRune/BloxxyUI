@@ -18,8 +18,6 @@ function Element:Initialize()
     if self._properties.Color ~= nil then
         self._properties.Color = getColor(self._properties.Color)
     end
-
-    
 end
 
 function Element:Destroy()

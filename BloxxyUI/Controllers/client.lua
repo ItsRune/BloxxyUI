@@ -115,9 +115,17 @@ function Controller:AddElement(Name, Properties, Callback)
     function runComponents(Prop, parent)
         if typeof(Prop.Components) == "table" then
             local checked = {}
+            local prevComponent
             for i,component in next, Prop.Components do
                 local done = false
                 local this = Prop.Components[i]
+
+                if prevComponent ~= nil then
+                    this.Properties.Parent = prevComponent._prop
+                else
+                    this.Properties.Parent = parent or ELEMENT._prop
+                end
+
                 if checked[i] == nil and component["Properties"] ~= nil and typeof(component["Properties"]["Components"]) == "table" and #component["Properties"]["Components"] > 0 then
                     checked[i] = true
                     
@@ -132,6 +140,7 @@ function Controller:AddElement(Name, Properties, Callback)
                         this = self._elements[component.Name].Element.new(this.Properties, this.Callback, ELEMENT)
                     end
                     
+                    prevComponent = this
                     task.spawn(function()
                         runComponents(component.Properties, this._prop)
                     end)
@@ -151,6 +160,8 @@ function Controller:AddElement(Name, Properties, Callback)
                         this = self._elements[component.Name].Element.new(this.Properties, this.Callback, ELEMENT)
                     end
                 end
+
+                prevComponent = this
             end
         end
     end

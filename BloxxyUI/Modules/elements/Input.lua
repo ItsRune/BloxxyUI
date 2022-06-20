@@ -46,7 +46,7 @@ function Element:Initialize(Type)
         end
     else
         self._properties.minChars = 0
-        self._properties.maxChars = 0
+        self._properties.maxChars = "inf"
     end
 
     self._prop.Title.Text = (typeof(self._properties["Title"]) ~= "nil") and self._properties.Title .. " " or ""
