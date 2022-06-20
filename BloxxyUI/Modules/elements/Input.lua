@@ -206,10 +206,13 @@ function Element:UpdateProperties()
             if v == true then
                 local toAdd = 40
                 self._prop.Background.BackgroundColor3 = contrastColor(self._properties.Color.Bkgd, toAdd)
-                self._prop.Title.TextColor3 = contrastColor(self._properties.Color.TextColor, toAdd)
+                self._prop.Background.Input.TextColor3 = contrastColor(self._properties.Color.TextColor, toAdd)
+
+                self._prop.Background.Input.ClearTextOnFocus = false
             elseif v == false then
                 local color = self._properties.Color
 
+                self._prop.Background.Input.ClearTextOnFocus = (self._properties.ClearTextOnFocus ~= nil) and self._properties.ClearTextOnFocus or true
                 self._prop.Background.BackgroundColor3 = color.Bkgd
                 self._prop.Title.TextColor3 = color.TextColor
             end
