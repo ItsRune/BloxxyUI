@@ -1,4 +1,3 @@
-local UserInputService = game:GetService("UserInputService")
 local TextService = game:GetService("TextService")
 local RunService = game:GetService("RunService")
 local Maid = require(script.Parent.Parent.Maid)
@@ -6,6 +5,7 @@ local Colors = require(script.Parent.Parent.Colors)
 local getColor = Colors.Func
 local contrastColor = Colors.SecondaryFunc
 local Instances = script.Parent.Parent.Parent.Instances
+local createdSettings
 
 local Element = {}
 Element.__index = Element
@@ -20,6 +20,11 @@ function Element.new(Properties, Callback, BaseFrame)
     self._bindable = Instance.new("BindableEvent")
     self._amountOfLines = 0
 
+    for i,v in next, createdSettings do
+        if self._properties[i] ~= nil then continue end
+        self._properties[i] = v
+    end
+
     self:Initialize("Input")
     return self
 end
@@ -33,7 +38,7 @@ function Element:Initialize(Type)
     self._prop.Background.Input.TextColor3 = contrastColor(self._properties.Color.TextColor)
     self._prop.Background.Input.PlaceholderColor3 = contrastColor(self._properties.Color.TextColor)
 
-    if (typeof(self._properties["ErrorCheck"]) == "boolean" and self._properties["ErrorCheck"] == true) and typeof(self._properties["CharacterCheck"]) == "table" then
+    if (typeof(self._properties["ErrorCheck"]) == "boolean" and self._properties["ErrorCheck"] == true) or typeof(self._properties["CharacterCheck"]) == "table" then
         if self._properties.CharacterCheck[1] ~= nil then
             self._properties.minChars = self._properties["CharacterCheck"][1]
             self._properties.maxChars = self._properties["CharacterCheck"][2] or "inf"
@@ -63,19 +68,23 @@ function Element:Initialize(Type)
     self._prop.Title.Text = titleTxt
 
     local sizeOfTitle = TextService:GetTextSize(titleTxt, self._prop.Title.TextSize, self._prop.Title.Font, self._prop.AbsoluteSize)
-    self._prop.Title.Size = UDim2.fromOffset(sizeOfTitle.X, sizeOfTitle.Y)
+    if (self._prop.AbsoluteSize.X > sizeOfTitle.X) then
+       self._prop.Title.Size = UDim2.fromOffset(self._prop.AbsoluteSize.X, sizeOfTitle.Y)
+    else
+        self._prop.Title.Size = UDim2.fromOffset(sizeOfTitle.X, sizeOfTitle.Y)
+    end
+    self._prop.Title.Position = self._prop.Title.Position - UDim2.new(0, 0, 0, (self._prop.Title.Size.Y.Offset / 2) + ((self._properties.errorStroke ~= nil) and self._properties.errorStroke or 0))
 
     self._maid["Bindable"] = self._bindable.Event:Connect(function(Command, ...)
         local Data = {...}
         if Command == "PropertyChange" then
             local Prop, Value = Data[1], Data[2]
             
-            assert(self._prop[Prop] ~= nil, debug.traceback("Couldn't change a nil property type!", 2))
-            assert(typeof(self._prop[Prop]) == typeof(Value), debug.traceback("Invalid property change, expected a '" .. typeof(self._prop[Prop]) .. "' got '" .. typeof(Value) .. "'!"))
+            assert(self._properties[Prop] ~= nil, debug.traceback("Couldn't change a nil property type!", 2))
+            assert(typeof(self._properties[Prop]) == typeof(Value), debug.traceback("Invalid property change, expected a '" .. typeof(self._properties[Prop]) .. "' got '" .. typeof(Value) .. "'!"))
 
-            self._prop[Prop] = Value;
             self._properties[Prop] = Value;
-            warn(self)
+            self:UpdateProperties()
         elseif Command == "ChangeState" then
             local State = Data[1]
             self._state = State;
@@ -99,7 +108,6 @@ function Element:Initialize(Type)
         return (len >= self._properties.minChars and self._properties.maxChars == "inf") or (len >= self._properties.minChars and len <= self._properties.maxChars)
     end
 
-
     local function handleChangeOfLines()
         local bounds = self._prop.Background.Input.TextBounds
         local fontSize = self._prop.Background.Input.TextSize
@@ -114,6 +122,11 @@ function Element:Initialize(Type)
     end
 
     self._maid:GiveTask(self._prop.Background.Input.Focused:Connect(function()
+        if self._properties["Disabled"] == true then
+            self._prop.Background.Input:ReleaseFocus()
+            return
+        end
+
         self._bindable:Fire("ChangeState", 2)
         self._properties["Focused"] = true
 
@@ -125,6 +138,10 @@ function Element:Initialize(Type)
         end
 
         self._maid["RenderSteppedFocused"] = RunService.RenderStepped:Connect(function()
+            if self._properties["Disabled"] == true then
+                return
+            end
+
             if self._properties.maxChars ~= 0 then
                 local okay = checkChars()
 
@@ -139,6 +156,9 @@ function Element:Initialize(Type)
     end))
 
     self._maid:GiveTask(self._prop.Background.Input.FocusLost:Connect(function()
+        if self._properties["Disabled"] == true then
+            return
+        end
         local Text = checkChars() and self._prop.Background.Input.Text or nil
 
         local pastColor = self._prop.Background.Input.TextColor3
@@ -158,6 +178,13 @@ function Element:ChangeProperty(Property, Value)
     self._bindable:Fire("PropertyChange", Property, Value)
 end
 
+createdSettings = {
+    ["Disabled"] = false;
+    ["ErrorCheck"] = false;
+    ["errorStroke"] = 1;
+    ["PlaceHolder"] = "";
+}
+
 function Element:UpdateProperties()
     for i,v in next, self._properties do
         if i == "Color" then
@@ -173,6 +200,21 @@ function Element:UpdateProperties()
             self._prop.Background.Outline.Enabled = v
         elseif i == "PlaceHolder" then
             self._prop.Background.Input.PlaceholderText = v
+        elseif i == "errorStroke" then
+            self._prop.Background.Outline.Thickness = v
+        elseif i == "Disabled" then
+            if v == true then
+                local toAdd = 40
+                self._prop.Background.BackgroundColor3 = contrastColor(self._properties.Color.Bkgd, toAdd)
+                self._prop.Title.TextColor3 = contrastColor(self._properties.Color.TextColor, toAdd)
+            elseif v == false then
+                local color = self._properties.Color
+
+                self._prop.Background.BackgroundColor3 = color.Bkgd
+                self._prop.Title.TextColor3 = color.TextColor
+            end
+
+            self._properties.Disabled = v
         else
             local success,_ = pcall(function()
                 return self._prop[i]

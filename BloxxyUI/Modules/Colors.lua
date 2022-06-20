@@ -14,6 +14,11 @@ local Colors = {
         TextColor = Color3.fromRGB(255, 255, 255);
         Outlined = false
     };
+    Information = {
+        Bkgd = Color3.fromRGB(91, 91, 255);
+        TextColor = Color3.fromRGB(255, 255, 255);
+        Outlined = false;
+    };
     Outlined = {
         Bkgd = Color3.fromRGB(51, 51, 51);
         TextColor = Color3.fromRGB(255, 255, 255);
@@ -36,11 +41,15 @@ local Colors = {
     };
 }
 
+local function getOpposite(clr)
+    return (clr.R * 0.299 + clr.G * 0.587 + clr.B * 0.114) > 186
+end
+
 local function getColor(clr)
     if typeof(clr) == "Color3" then
         return {
             Bkgd = clr;
-            TextColor = (clr.R > 155 and clr.G > 155 and clr.B > 155) and Color3.new(0, 0, 0) or Color3.new(1, 1, 1);
+            TextColor = (getOpposite(clr)) and Color3.new(0, 0, 0) or Color3.new(1, 1, 1);
             Outlined = false;
         }
     end
@@ -56,7 +65,7 @@ local function contrastColor(pastColor, toAddOrSubtract)
     if typeof(pastColor) ~= "Color3" then return pastColor end
     toAddOrSubtract = toAddOrSubtract or 100;
 
-    if pastColor.R > 0 and pastColor.G > 0 and pastColor.B > 0 then
+    if getOpposite(pastColor) then
         return Color3.fromRGB(pastColor.R - toAddOrSubtract, pastColor.G - toAddOrSubtract, pastColor.B - toAddOrSubtract)
     else
         return Color3.fromRGB(pastColor.R + toAddOrSubtract, pastColor.G + toAddOrSubtract, pastColor.B + toAddOrSubtract)

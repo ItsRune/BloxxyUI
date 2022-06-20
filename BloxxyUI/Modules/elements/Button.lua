@@ -4,7 +4,9 @@ local Players = game:GetService("Players")
 
 --// Modules \\--
 local Maid = require(script.Parent.Parent.Maid)
-local getColor = require(script.Parent.Parent.Colors).Func
+local Colors = require(script.Parent.Parent.Colors)
+local constrastColor = Colors.SecondaryFunc
+local getColor = Colors.Func
 local clickEffect = require(script.Parent.Parent.effects.clickEffect)
 
 --// Variables \\--
@@ -38,7 +40,7 @@ function Element:Initialize()
 
     self._maid:GiveTask(self._prop.Button.MouseButton1Click:Connect(function()
         clickEffect(self)
-        self._callback(Player, {self._prop, self})
+        self._callback(self._prop, self)
     end))
 
     self._maid["Bindable"] = self._bindable.Event:Connect(function(Command, ...)

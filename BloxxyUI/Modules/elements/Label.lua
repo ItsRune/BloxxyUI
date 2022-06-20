@@ -1,25 +1,27 @@
---// Modules \\--
+local Workspace = game:GetService("Workspace")
+local TextService = game:GetService("TextService")
 local Maid = require(script.Parent.Parent.Maid)
 local getColor = require(script.Parent.Parent.Colors).Func
-
---// Variables \\--
 local Instances = script.Parent.Parent.Parent.Instances
+local CurrentCamera = Workspace.CurrentCamera
+local createdSettings
 local Element = {}
 Element.__index = Element
 
-local baseProps = {
-    BackgroundTransparency = 1;
-    TextColor3 = Color3.fromRGB(255, 255, 255);
-}
 --// Functions \\--
 function Element.new(Properties, Callback, BaseFrame)
     local self = setmetatable({}, Element)
 
     self._maid = Maid.new()
     self._properties = Properties
-    self._callback = Callback
+    self._callback = Callback or function() end
     self._state = 1
     self._prop = nil
+
+    for i,v in next, createdSettings do
+        if self._properties[i] ~= nil then continue end
+        self._properties[i] = v
+    end
 
     self:Initialize()
     return self
@@ -36,6 +38,10 @@ function Element:Initialize()
 
     task.spawn(self._callback, self)
 end
+
+createdSettings = {
+    ["spacingOffset"] = 10;
+}
 
 function Element:UpdateProperties()
     for i,v in next, self._properties do
@@ -65,6 +71,17 @@ function Element:UpdateProperties()
             self._prop.Background.BackgroundTransparency = v
         elseif i == "Parent" then
             self._prop.Parent = v
+        elseif i == "spacingOffset" then
+            self._properties.spacingOffset = v
+        elseif i == "Size" then
+            if string.lower(tostring(v)) == "auto" then
+                local size = TextService:GetTextSize(self._properties.Text, self._prop.TextObj.TextSize, self._prop.TextObj.Font, CurrentCamera.ViewportSize)
+                self._properties.Size = size
+                self._prop.Size = UDim2.fromOffset(size.X + self._properties.spacingOffset, size.Y + (self._properties.spacingOffset / 2))
+                return
+            end
+
+            self._prop.Size = v
         else
             local frameSucc,_ = pcall(function()
                 return self._prop[i]
@@ -89,8 +106,8 @@ function Element:Destroy()
     end
     task.wait()
 
-    Element._prop:Destroy()
-    Element._maid:Destroy()
+    self._prop:Destroy()
+    self._maid:Destroy()
 end
 
 return {
