@@ -11,7 +11,7 @@ Base, Element = controller:AddElement("BaseFrame", {
 		{
 			Name = "Input";
 			Properties = {
-				Color = Color3.fromRGB(90, 200, 255);
+				Color = Color3.fromRGB(26, 26, 26);
 				errorStroke = 4;
 				Position = UDim2.new(.5, 0, .5, 0);
 				AnchorPoint = Vector2.new(.5, .5);
@@ -23,7 +23,7 @@ Base, Element = controller:AddElement("BaseFrame", {
 			};
 			
 			Callback = function(text, obj, this)
-				local UI, labelThis = controller:AddElement("Label", {
+				local _, labelThis = controller:AddElement("Label", {
 					Size = "auto";
 					Text = (text) and text or string.format("Error, you weren't within the character limit of %s - %s", this._properties.CharacterCheck.min, this._properties.CharacterCheck.max);
 					Color = "Dark";

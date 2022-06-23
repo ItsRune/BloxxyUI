@@ -1,10 +1,11 @@
 --// Variables \\--
+local Maid = require(script.Parent.Parent.Maid)
 local Effect = {}
 Effect.__index = Effect
 
 local Types = {
     ["circleClick"] = 0;
-    ["effect2"] = 1;
+    ["Loading"] = 1;
     ["effect3"] = 2;
     ["effect4"] = 3;
 }
@@ -13,6 +14,7 @@ local Types = {
 function Effect.new(Type, Callback)
     local self = setmetatable({}, Effect)
 
+    self._maid = Maid.new()
     self._type = Types[Type] or -1
     self._state = 0
     self._tweening = false
@@ -27,7 +29,8 @@ function Effect:ChangeState(new)
 end
 
 function Effect:Destroy()
-    return setmetatable(Effect, nil)
+    self._maid:Destroy()
+    return nil
 end
 
 return Effect

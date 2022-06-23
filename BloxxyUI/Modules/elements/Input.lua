@@ -2,6 +2,7 @@ local TextService = game:GetService("TextService")
 local RunService = game:GetService("RunService")
 local Maid = require(script.Parent.Parent.Maid)
 local Colors = require(script.Parent.Parent.Colors)
+-- local loadingEffect = require(script.Parent.Parent.Modules.elements.Loading)
 local getColor = Colors.Func
 local contrastColor = Colors.SecondaryFunc
 local Instances = script.Parent.Parent.Parent.Instances
@@ -165,7 +166,12 @@ function Element:Initialize(Type)
         self._prop.Background.Input.TextColor3 = contrastColor(pastColor)
         self._prop.Background.Input.PlaceholderColor3 = contrastColor(pastColor)
 
-        self._callback(Text, self._prop, self)
+        if string.len(self._prop.Background.Input.Text) > 0 then
+            self._callback(Text, self._prop, self)
+        else
+            self._prop.Background.Outline.Enabled = false
+        end
+
         self._maid["RenderSteppedFocused"] = nil
         self._maid["TextBounds"] = nil
         self._bindable:Fire("ChangeState", 1)
@@ -204,7 +210,7 @@ function Element:UpdateProperties()
             self._prop.Background.Outline.Thickness = v
         elseif i == "Disabled" then
             if v == true then
-                local toAdd = 40
+                local toAdd = 90
                 self._prop.Background.BackgroundColor3 = contrastColor(self._properties.Color.Bkgd, toAdd)
                 self._prop.Background.Input.TextColor3 = contrastColor(self._properties.Color.TextColor, toAdd)
 
